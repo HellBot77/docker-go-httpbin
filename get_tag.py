@@ -1,16 +1,9 @@
+import argparse
 import json
-import os
 import re
-import shutil
 import subprocess
 import sys
-import argparse
 import urllib.request
-
-PIP_PACKAGE = "mitmproxy"
-DOCKER_REPOSITORY = "mitmproxy/mitmproxy"
-GO_PACKAGE = "github.com/mccutchen/go-httpbin/v2"
-GO_BINARY = f"{GO_PACKAGE}/cmd/go-httpbin"
 
 _RE_PIP_VERSIONS_1 = re.compile(r"\(from versions: (.*)\)")
 
@@ -29,9 +22,7 @@ def get_pip_versions_2(package: str) -> list[str]:
 
 
 def get_pip_versions_3(package: str) -> list[str]:
-    process = subprocess.run(
-        ["pip", "index", "versions", package], capture_output=True, check=True
-    )
+    process = subprocess.run(["pip", "index", "versions", package], capture_output=True, check=True)
     return process.stdout.decode().splitlines()[1][20:].split(", ")[::-1]
 
 
@@ -65,11 +56,7 @@ def get_pip_version(package: str) -> str:
 
 
 def get_go_versions(module: str) -> list[str]:
-    process = subprocess.run(
-        ["go", "list", "-json", "-m", "-versions", module],
-        capture_output=True,
-        check=True,
-    )
+    process = subprocess.run(["go", "list", "-json", "-m", "-versions", module], capture_output=True, check=True)
     return json.loads(process.stdout)["Versions"]
 
 
@@ -84,20 +71,6 @@ def get_docker_versions(repository: str) -> list[str]:
     return [result["name"] for result in json.loads(response.read())["results"]]
 
 
-def check_pip_version(package: str, repository: str) -> bool:
-    return get_pip_version(package) in get_docker_versions(repository)
-
-
-def check_go_version(module: str, repository: str) -> bool:
-    return get_go_version(module) in get_docker_versions(repository)
-
-
-def make_wheel(package: str):
-    if os.path.isdir(package):
-        shutil.rmtree(package)
-    subprocess.check_call(["pip", "wheel", f"--wheel-dir={package}", package])
-
-
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("repository")
@@ -105,13 +78,15 @@ def main():
     group.add_argument("--pip")
     group.add_argument("--go")
     args = parser.parse_args()
+    deployed = get_docker_versions(args.repository)
     if args.pip:
-        check = check_pip_version(args.pip, args.repository)
+        tag = get_pip_version(args.pip)
     elif args.go:
-        check = check_go_version(args.go, args.repository)
+        tag = get_go_version(args.go)
     else:
         raise ValueError()
-    print(f"changed={str(not check).lower()}")
+    if tag not in deployed:
+        print(f"latest-tag={tag}")
 
 
 if __name__ == "__main__":
