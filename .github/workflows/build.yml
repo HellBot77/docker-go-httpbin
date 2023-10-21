@@ -13,8 +13,11 @@ jobs:
     outputs:
       latest-tag: ${{ steps.get-tag.outputs.latest-tag }}
     steps:
-      - name: Fetch repository
+      - name: Fetch get_tag.py
         uses: actions/checkout@v4
+        with:
+          sparse-checkout: get_tag.py
+          sparse-checkout-cone-mode: false
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
@@ -22,13 +25,16 @@ jobs:
       - name: Get Docker image tag
         id: get-tag
         run: python get_tag.py ${{ env.DOCKERHUB_USERNAME }}/go-httpbin --go github.com/mccutchen/go-httpbin/v2 >> $GITHUB_OUTPUT
-  deploy:
+  build-push:
     needs: get-tag
     if: ${{ needs.get-tag.outputs.latest-tag }}
     runs-on: ubuntu-latest
     steps:
-      - name: Fetch repository
+      - name: Fetch Dockerfile
         uses: actions/checkout@v4
+        with:
+          sparse-checkout: Dockerfile
+          sparse-checkout-cone-mode: false
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
@@ -51,5 +57,5 @@ jobs:
           platforms: ${{ env.PLATFORM }}
           push: true
           tags: |
-            ${{ env.DOCKERHUB_USERNAME }}/go-httpbin:latest
             ${{ env.DOCKERHUB_USERNAME }}/go-httpbin:${{ needs.get-tag.outputs.latest-tag }}
+            ${{ env.DOCKERHUB_USERNAME }}/go-httpbin:latest
