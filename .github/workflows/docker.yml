@@ -1,0 +1,23 @@
+on:
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    env:
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+    steps:
+      - name: Fetch repository
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3
+      - name: Check Docker image version
+        run: python check.py helllord/go-httpbin --go github.com/mccutchen/go-httpbin/v2 >> $GITHUB_OUTPUT
+      - name: Build and push Docker image
+        if: ${{ steps.check.outputs.changed == 'true' }}
+        run: echo "Build and push Docker image"
