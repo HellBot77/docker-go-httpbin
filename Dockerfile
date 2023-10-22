@@ -1,7 +1,8 @@
 # syntax = docker/dockerfile:1.3
 FROM golang:alpine AS build
 
-RUN go install github.com/mccutchen/go-httpbin/v2/cmd/go-httpbin@latest
+ARG TAG=latest
+RUN go install github.com/mccutchen/go-httpbin/v2/cmd/go-httpbin@${TAG}
 
 FROM gcr.io/distroless/static
 

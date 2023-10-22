@@ -58,6 +58,7 @@ jobs:
           context: .
           platforms: ${{ env.PLATFORM }}
           push: true
+          build-args: TAG=${{ needs.get-tag.outputs.latest-tag }}
           tags: |
             ${{ env.DOCKERHUB_USERNAME }}/go-httpbin:${{ needs.get-tag.outputs.latest-tag }}
             ${{ env.DOCKERHUB_USERNAME }}/go-httpbin:latest
