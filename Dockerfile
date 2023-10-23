@@ -1,11 +1,11 @@
-# syntax = docker/dockerfile:1.3
-ARG TAG=latest
-
 FROM golang:alpine AS build
+
+ARG TAG=latest
 RUN go install github.com/mccutchen/go-httpbin/v2/cmd/go-httpbin@${TAG}
+COPY ${GOPATH}/bin/go-httpbin /
 
 FROM gcr.io/distroless/static
-COPY --from=build /go/bin/go-httpbin /
 
+COPY --from=build /go-httpbin /
 EXPOSE 8080
 CMD ["/go-httpbin"]
