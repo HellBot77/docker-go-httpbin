@@ -86,7 +86,7 @@ def main():
     else:
         raise ValueError()
     if tag not in deployed:
-        print(f"latest-tag={tag}")
+        print(f"tag={tag}")
 
 
 if __name__ == "__main__":
