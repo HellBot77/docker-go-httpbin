@@ -64,6 +64,17 @@ def get_go_version(module: str) -> str:
     return get_go_versions(module)[-1]
 
 
+def get_git_versions(repository: str) -> list[str]:
+    url = f"https://api.github.com/repos/{repository}/tags"
+    response = urllib.request.urlopen(url)
+    assert 200 == response.status
+    return [result["name"] for result in json.loads(response.read())][::-1]
+
+
+def get_git_version(repository: str) -> str:
+    return get_git_versions(repository)[-1]
+
+
 def get_docker_versions(repository: str) -> list[str]:
     url = f"https://hub.docker.com/v2/repositories/{repository}/tags?page_size={sys.maxsize}"
     response = urllib.request.urlopen(url)
@@ -77,12 +88,15 @@ def main():
     group = parser.add_mutually_exclusive_group()
     group.add_argument("--pip")
     group.add_argument("--go")
+    group.add_argument("--git")
     args = parser.parse_args()
     deployed = get_docker_versions(args.repository)
     if args.pip:
         tag = get_pip_version(args.pip)
     elif args.go:
         tag = get_go_version(args.go)
+    elif args.git:
+        tag = get_git_version(args.git)
     else:
         raise ValueError()
     if tag not in deployed:
