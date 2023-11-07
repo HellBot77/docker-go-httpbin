@@ -63,3 +63,12 @@ jobs:
           tags: |
             ${{ env.DOCKERHUB_USERNAME }}/${{ env.DOCKERHUB_REPOSITORY }}:${{ needs.get-tag.outputs.tag }}
             ${{ env.DOCKERHUB_USERNAME }}/${{ env.DOCKERHUB_REPOSITORY }}:latest
+  cancel-action:
+    needs: get-tag
+    if: ${{ !needs.get-tag.outputs.tag }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cancel action
+        uses: andymckay/cancel-action@0.3
+      - name: Wait for cancel
+        run: sleep infinity
