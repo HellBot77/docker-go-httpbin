@@ -19,6 +19,7 @@ jobs:
       - name: Fetch get_tag.py
         uses: actions/checkout@v4
         with:
+          repository: hellbot77/get-tag
           sparse-checkout: get_tag.py
           sparse-checkout-cone-mode: false
       - name: Set up Python
