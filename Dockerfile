@@ -7,4 +7,4 @@ FROM gcr.io/distroless/static
 
 COPY --from=build /go/bin/go-httpbin /bin
 EXPOSE 8080
-CMD ["/bin/go-httpbin"]
+CMD [ "/bin/go-httpbin" ]
